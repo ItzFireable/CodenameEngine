@@ -128,10 +128,15 @@ class MemoryUtil {
 		reg.match(process.stdout.readAll().toString());
 		if (process.exitCode() == 0) return reg.matched(1);
 		#elseif linux
-		var process = new HiddenProcess("sudo", ["dmidecode", "--type", "17"]);
+
+		// Does not work on most machines (default user does not often have sudo by default)
+		// Need to find an alternative to it.
+		var process = new HiddenProcess("sudo", ["dmidecode", "--type", "17"]); 
 		if (process.exitCode() != 0) return "Unknown";
+
 		var lines = process.stdout.readAll().toString().split("\n");
 		for (line in lines) {
+			line = StringTools.ltrim(line); // Required because dmidecode adds spacing to start
 			if (line.indexOf("Type:") == 0) {
 				return line.substring("Type:".length).trim();
 			}
