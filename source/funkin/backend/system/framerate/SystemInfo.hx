@@ -50,16 +50,30 @@ class SystemInfo extends FramerateCategory {
 				gpuName = Std.string(flixel.FlxG.stage.context3D.gl.getParameter(flixel.FlxG.stage.context3D.gl.RENDERER)).split("/")[0].trim();
 
 				var vRAMBytes:UInt = cast(flixel.FlxG.stage.context3D.gl.getParameter(openfl.display3D.Context3D.__glMemoryTotalAvailable), UInt);
-				if (vRAMBytes == 1000 || vRAMBytes <= 0)
+
+				// This needs to be delayed somehow, vRAMBytes fucks itself if it goes too fast on Linux (maybe even other OSes, can't confirm).
+				// Trace works but is not preferred. Need to find an alternative.
+
+				// Also, Linux returns VRAM incorrectly. Might be OpenFL, who knows. Need to check this again later.
+				#if linux
+				trace("VRAM: " + CoolUtil.getSizeString(vRAMBytes * 1000));
+				#end
+
+				if (vRAMBytes == 1000 || vRAMBytes <= 0) {
 					Logs.trace('Unable to grab GPU VRAM', ERROR, RED);
+					vRAM = "Unknown";
+				}
 				else
+				{
 					vRAM = CoolUtil.getSizeString(vRAMBytes * 1000);
+				}
 			} else 
 				Logs.trace('Unable to grab GPU Info', ERROR, RED);
 		}
 
 		#if cpp
-		totalMem = Std.string(MemoryUtil.getTotalMem() / 1024) + " GB";
+		// Rounding to 2 decimals, looks a lot nicer
+		totalMem = Std.string(Math.round((MemoryUtil.getTotalMem() / 1024) * 100)/100) + " GB";
 		#else 
 		Logs.trace('Unable to grab RAM Amount', ERROR, RED);
 		#end
@@ -73,10 +87,12 @@ class SystemInfo extends FramerateCategory {
 	}
 
 	static function formatSysInfo() {
-		if (osInfo != "Unknown") __formattedSysText = 'System: $osInfo';
+		if (osInfo != "Unknowvn") __formattedSysText = 'System: $osInfo';
 		if (cpuName != "Unknown") __formattedSysText += '\nCPU: ${cpuName} ${openfl.system.Capabilities.cpuArchitecture} ${(openfl.system.Capabilities.supports64BitProcesses ? '64-Bit' : '32-Bit')}';
 		if (gpuName != cpuName && (gpuName != "Unknown" && vRAM != "Unknown")) __formattedSysText += '\nGPU: ${gpuName} | VRAM: ${vRAM}'; // 1000 bytes of vram (apus)
-		if (totalMem != "Unknown" && memType != "Unknown") __formattedSysText += '\nTotal MEM: ${totalMem} $memType';
+		
+		// Don't show memory type if it is unknown (probably should just show unknown? idk tho)
+		if (totalMem != "Unknown" /*&& memType != "Unknown"*/) __formattedSysText += '\nTotal MEM: ${totalMem} ${memType != "Unknown" ? memType : ""}'; 
 	}
 
 	public function new() {

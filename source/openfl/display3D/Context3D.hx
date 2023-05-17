@@ -373,11 +373,37 @@ import lime.math.Vector2;
 
 		if (__glMemoryTotalAvailable == -1)
 		{
-			var extension = gl.getExtension("NVX_gpu_memory_info");
-			if (extension != null)
+			var extension;
+			var vendor = gl.getParameter(gl.VENDOR);
+
+			var target = StringTools.contains(vendor.toLowerCase(), "nvidia") ? "nvidia" : "amd";
+			target = StringTools.contains(vendor.toLowerCase(), "intel") ? "intel" : target;
+
+			switch(vendor)
 			{
-				__glMemoryTotalAvailable = extension.GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX;
-				__glMemoryCurrentAvailable = extension.GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX;
+				case 'amd':
+					// Someone with an AMD gpu needs to confirm this... I can't.
+					// It's either this or GL_ATI_meminfo (which is deprecated)
+
+					extension = gl.getExtension("WGL_AMD_gpu_association");
+					if (extension == null) return;
+
+					__glMemoryTotalAvailable = extension.WGL_GPU_RAM_AMD;
+					__glMemoryCurrentAvailable = extension.WGL_GPU_RAM_AMD;
+				case 'intel':
+					// TODO: Get the correct extension for Intel.
+					
+					var extension = gl.getExtension("NVX_gpu_memory_info");
+					if (extension == null) return;
+
+					__glMemoryTotalAvailable = extension.GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX;
+					__glMemoryCurrentAvailable = extension.GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX;
+				default:
+					var extension = gl.getExtension("NVX_gpu_memory_info");
+					if (extension == null) return;
+
+					__glMemoryTotalAvailable = extension.GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX;
+					__glMemoryCurrentAvailable = extension.GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX;
 			}
 		}
 		#end

@@ -70,6 +70,10 @@ class Main extends Sprite
 		framerateSprite.scaleX = framerateSprite.scaleY = stage.window.scale;
 		SystemInfo.init();
 		#end
+
+		#if sys
+		// untyped __cpp__("SDL_GL_SetSwapInterval(1);");
+		#end
 	}
 
 	@:dox(hide)
