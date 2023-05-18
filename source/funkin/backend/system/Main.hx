@@ -71,9 +71,8 @@ class Main extends Sprite
 		SystemInfo.init();
 		#end
 
-		#if sys
-		// untyped __cpp__("SDL_GL_SetSwapInterval(1);");
-		#end
+		@:privateAccess
+		FlxG.stage.window.vsync = true;
 	}
 
 	@:dox(hide)

@@ -661,6 +661,18 @@ class NativeWindow
 		return value;
 	}
 
+	public function setVSync(enabled:Bool):Bool
+	{
+		if (handle != null)
+		{
+			#if (!macro && lime_cffi)
+			return NativeCFFI.lime_window_set_vsync(handle, enabled);
+			#end
+		}
+
+		return enabled;
+	}
+
 	public function warpMouse(x:Int, y:Int):Void
 	{
 		#if (!macro && lime_cffi)
